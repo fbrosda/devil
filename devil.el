@@ -556,6 +556,8 @@ k' (`describe-key').  Format control sequences supported by
     (devil--update-command-loop-info key binding)
     (devil--log-command-loop-info)
     (devil--log "Executing command: %s => %s" described-key binding)
+    (when (bound-and-true-p delete-selection-mode)
+      (delete-selection-pre-hook))
     (call-interactively binding)))
 
 (defun devil--update-command-loop-info (key binding)
