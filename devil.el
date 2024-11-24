@@ -331,6 +331,14 @@ locally."
         (describe-key key)
         (funcall exit-function)))))
 
+(defun devil-describe-prefix-bindings ()
+  "Describe possibly translated prefix."
+  (interactive)
+  (let* ((key (this-command-keys))
+         (parsed-key (kbd (devil--translate key)))
+         (prefix (substring parsed-key 0 (1- (length parsed-key)))))
+    (describe-bindings prefix)))
+
 
 ;;; Command Lookup ===================================================
 
@@ -393,16 +401,22 @@ TRANSLATED-KEY is translated further by invoking the `car' of
 this list.  Then this function is called recursively with the
 `cdr' of this list."
   (let* ((parsed-key (ignore-errors (kbd translated-key)))
+         (suffix (and (stringp parsed-key)
+                      (substring parsed-key (1- (length parsed-key)))))
          (binding (when parsed-key (key-binding parsed-key))))
     (cond ((devil--incomplete-key-p translated-key)
            (devil--log "Ignoring incomplete key: %s" translated-key)
            nil)
+          ((string= (kbd "C-g") suffix)
+           (devil--binding-result key nil #'keyboard-quit))
           ((keymapp binding)
            (devil--log "Ignoring prefix key: %s" translated-key)
            nil)
           ((commandp binding)
            (devil--log "Found command: %s => %s" translated-key binding)
            (devil--binding-result key translated-key binding))
+          ((and suffix (char-equal help-char (string-to-char suffix)))
+           (devil--binding-result key nil #'devil-describe-prefix-bindings))
           (t
            (devil--log "Undefined key: %s => %s" translated-key binding)
            (let ((fallback-key (when fallbacks (funcall (car fallbacks)
