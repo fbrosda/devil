@@ -1,3 +1,31 @@
+* Note about this fork
+
+This repository contains several branches, with pull requests, which are not yet merged into the main repository.  If you want to use all these on top of the original devil mode, you can checkout and use the ~dev~ branch.  If you are using emacs >= 30 you could use ~use-package~ with the ~:vc~ keyword:
+
+#+begin_src elisp
+(use-package devil
+  :ensure t
+  :demand t
+  :vc (:url "https://github.com/fbrosda/devil"
+       :branch "dev"
+       :rev :newest)
+  :custom
+  (devil-exit-key ".")
+  (devil-all-keys-repeatable t)
+  (devil-highlight-repeatable t)
+  (devil-repeatable-keys '(("%k p" "%k n" "%k b" "%k f" "%k a" "%k e")
+                           ("%k m n" "%k m p")
+                           ("%k m b" "%k m f" "%k m a" "%k m e")
+                           ("%k m m f" "%k m m b" "%k m m a" "%k m m e"
+                            "%k m m n" "%k m m p" "%k m m u" "%k m m d")))
+  :bind
+  ([remap describe-key] . devil-describe-key)
+  :config
+  (global-devil-mode))
+#+end_src
+
+The original README starts after after this line.
+
 * Devil Mode
 
 [[https://melpa.org/#/devil][file:https://melpa.org/packages/devil-badge.svg]]
