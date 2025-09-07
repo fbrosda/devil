@@ -70,6 +70,12 @@ For example, you can set it to <return> like `isearch-exit'."
   "Non-nil iff Devil should print log messages."
   :type 'boolean)
 
+(defcustom devil-prefix-help-command nil
+  "Command to run when `help-char' character follows a prefix key in devil
+mode. This should have similar behavior to your `prefix-help-command',
+but aware of devil-mode. Defaults to `devil-describe-prefix-bindings' if
+unset.")
+
 (defun devil-toggle-logging ()
   "Toggle the value of `devil-logging'."
   (interactive)
@@ -430,7 +436,8 @@ this list.  Then this function is called recursively with the
           ((string= (kbd "C-g") suffix)
            (devil--binding-result key nil #'keyboard-quit))
           ((and suffix (char-equal help-char (string-to-char suffix)))
-           (devil--binding-result key nil #'devil-describe-prefix-bindings))
+           (devil--binding-result key nil (or devil-prefix-help-command
+                                              #'devil-describe-prefix-bindings)))
           (t
            (devil--log "Undefined key: %s => %s" translated-key binding)
            (let ((fallback-key (when fallbacks (funcall (car fallbacks)
