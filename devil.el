@@ -255,9 +255,7 @@ locally."
   "Local minor mode to support Devil key sequences."
   :lighter devil-lighter
   (devil--log "Mode is %s in %s" devil-mode (buffer-name))
-  (if devil-mode
-      (devil--enable-which-key-support)
-    (devil--enable-which-key-support -1)))
+  (devil--enable-which-key-support))
 
 ;;;###autoload
 (define-globalized-minor-mode
@@ -653,25 +651,34 @@ passed to ORIG-FUN. This current command will be stored in
   (and (bound-and-true-p devil-mode)
        (eq this-command 'devil)))
 
-(defun devil--enable-which-key-support (&optional disable)
-  "Enable support for which-key if non-nil.
-If DISABLE is non-nil disable support."
-  (interactive "P")
-  (when (bound-and-true-p which-key-mode)
-    (if disable
-        (progn
-          (advice-remove 'devil--read-key :around
-                         #'devil--which-key-read-key-advice)
-          (remove-function which-key-this-command-keys-function
-                           #'devil--which-key-this-command-keys)
-          (remove-hook 'which-key-inhibit-display-hook
-                       #'devil--which-key-self-insert-p))
-      (advice-add 'devil--read-key :around
-                  #'devil--which-key-read-key-advice)
-      (add-function :override which-key-this-command-keys-function
-                    #'devil--which-key-this-command-keys)
-      (add-hook 'which-key-inhibit-display-hook
-                #'devil--which-key-self-insert-p))))
+(defun devil--enable-which-key-support ()
+  "Enable support for which-key."
+  (if devil-mode
+      (add-hook 'which-key-mode-hook #'devil--enable-which-key-support-later)
+    (remove-hook 'which-key-mode-hook #'devil--enable-which-key-support-later))
+
+  (when (boundp which-key-mode)
+    (devil--enable-which-key-support-later)))
+
+(defun devil--enable-which-key-support-later (&optional _)
+  "Enable support for which-key.P
+This function adds the actual logic, it is called directly, when
+enabling/disabling devil-mode and is also added to the
+which-key-mode-hook."
+  (if (and which-key-mode devil-mode)
+      (progn
+        (advice-add 'devil--read-key :around
+                    #'devil--which-key-read-key-advice)
+        (add-function :override which-key-this-command-keys-function
+                      #'devil--which-key-this-command-keys)
+        (add-hook 'which-key-inhibit-display-hook
+                  #'devil--which-key-self-insert-p))
+    (advice-remove 'devil--read-key
+                   #'devil--which-key-read-key-advice)
+    (remove-function which-key-this-command-keys-function
+                     #'devil--which-key-this-command-keys)
+    (remove-hook 'which-key-inhibit-display-hook
+                 #'devil--which-key-self-insert-p)))
 
 
 ;;; Utility Functions ================================================
