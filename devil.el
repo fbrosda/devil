@@ -657,11 +657,11 @@ passed to ORIG-FUN. This current command will be stored in
       (add-hook 'which-key-mode-hook #'devil--enable-which-key-support-later)
     (remove-hook 'which-key-mode-hook #'devil--enable-which-key-support-later))
 
-  (when (boundp which-key-mode)
+  (when (featurep 'which-key)
     (devil--enable-which-key-support-later)))
 
 (defun devil--enable-which-key-support-later (&optional _)
-  "Enable support for which-key.P
+  "Enable support for which-key.
 This function adds the actual logic, it is called directly, when
 enabling/disabling devil-mode and is also added to the
 which-key-mode-hook."
