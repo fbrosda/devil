@@ -643,7 +643,8 @@ passed to ORIG-FUN. This current command will be stored in
   "Version of `which-key-this-command-keys-function' for devil-mode."
   (let ((this-command-keys (this-single-command-keys)))
     (when (devil--which-key-self-insert-p)
-      (setq this-command-keys (when devil--which-key-string
+      (setq this-command-keys (when (and devil--which-key-string
+                                         (not (equal devil--which-key-string "C-M-")))
                                 (kbd devil--which-key-string))))
     this-command-keys))
 
